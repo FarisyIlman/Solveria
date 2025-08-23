@@ -55,39 +55,61 @@ function App() {
   };
 
   const handleTaskSubmit = async (task) => {
-    try {
-      if (editingTask) {
-        await updateTask(editingTask.id, task);
-        setEditingTask(null);
-      } else {
-        await submitTask(task);
-      }
-      fetchTasks();
-    } catch (error) {
-      console.error("Failed to submit task:", error);
+  try {
+    if (editingTask) {
+      // Update task yang diedit
+      setTasks(prev => prev.map(t => t.id === editingTask.id ? { ...t, ...task } : t));
+      setEditingTask(null);
+      updateTask(editingTask.id, task).catch(console.error);
+    } else {
+      // Tambah task baru langsung ke state lokal
+      const newTask = { ...task, id: Date.now(), status: 'Not Completed' };
+      setTasks(prev => [...prev, newTask]);
+
+      // Simpan ke backend, tapi jangan tunggu
+      submitTask(task).catch(console.error);
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+
 
   const handleChangeStatus = async (taskId, newStatus) => {
-    try {
-      await updateTask(taskId, { status: newStatus });
-      fetchTasks();
-    } catch (error) {
-      console.error("Failed to update task status:", error);
-    }
-  };
+  try {
+    // Update state lokal langsung
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+
+    // Update backend
+    await updateTask(taskId, { status: newStatus });
+  } catch (error) {
+    console.error("Failed to update task status:", error);
+    alert("Terjadi kesalahan saat update status task di server.");
+    fetchTasks(); // fallback jika error
+  }
+};
+
 
   const handleDelete = async (taskId) => {
-    const confirmed = window.confirm("Apakah Anda yakin akan menghapus tugas ini?");
-    if (confirmed) {
-      try {
-        await removeTask(taskId);
-        fetchTasks();
-      } catch (error) {
-        console.error("Failed to delete task:", error);
-      }
+  const confirmed = window.confirm("Apakah Anda yakin akan menghapus tugas ini?");
+  if (confirmed) {
+    // Update state lokal langsung
+    setTasks(prevTasks => prevTasks.filter(t => t.id !== taskId));
+
+    try {
+      // Hapus di backend tanpa menunggu
+      await removeTask(taskId);
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      alert("Terjadi kesalahan saat menghapus task di server.");
+      // Jika gagal, bisa fetch ulang untuk sinkronisasi
+      fetchTasks();
     }
-  };
+  }
+};
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');

@@ -78,17 +78,52 @@ function TaskForm({ onSubmit, initialData, tasks }) {
   }, [task, validateOverlap]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    const updatedTask = { ...task, [name]: value };
-    setTask(updatedTask);
-  };
+  const { name, value } = e.target;
+  const updatedTask = { ...task, [name]: value };
+
+  if ((name === 'duration' || name === 'window_start') && updatedTask.window_start && updatedTask.duration) {
+    const start = new Date(updatedTask.window_start);
+    const durationMs = parseFloat(updatedTask.duration) * 60 * 60 * 1000;
+    const end = new Date(start.getTime() + durationMs);
+
+    // ambil tanggal & jam sesuai local
+    const yyyy = end.getFullYear();
+    const mm = String(end.getMonth() + 1).padStart(2, '0');
+    const dd = String(end.getDate()).padStart(2, '0');
+    const hh = String(end.getHours()).padStart(2, '0');
+    const min = String(end.getMinutes()).padStart(2, '0');
+
+    updatedTask.window_end = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  }
+
+  setTask(updatedTask);
+};
+
+
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!isOverlapping) {
-      onSubmit(task);
+  e.preventDefault();
+  if (!isOverlapping) {
+    const action = initialData ? 'mengubah' : 'menambahkan';
+    const confirmed = window.confirm(`Apakah Anda yakin ingin ${action} tugas ini?`);
+    if (confirmed) {
+      onSubmit(task); // kirim task ke App.js
+      alert(`Tugas berhasil ${initialData ? 'diubah' : 'ditambahkan'}!`); // notifikasi sesuai aksi
+
+      if (!initialData) {
+        // Reset form hanya untuk tambah baru
+        setTask({
+          name: '',
+          duration: '',
+          deadline: '',
+          window_start: '',
+          window_end: '',
+        });
+      }
     }
-  };
+  }
+};
+
 
   return (
     <div className="task-form-container">
@@ -101,7 +136,7 @@ function TaskForm({ onSubmit, initialData, tasks }) {
         <label>Waktu Mulai</label>
         <input name="window_start" type="datetime-local" value={task.window_start} onChange={handleChange} required />
         <label>Waktu Selesai</label>
-        <input name="window_end" type="datetime-local" value={task.window_end} onChange={handleChange} required />
+        <input name="window_end" type="datetime-local" value={task.window_end} readOnly />
         
         {isOverlapping && (
           <p className="error-message">{errorMessage}</p>
