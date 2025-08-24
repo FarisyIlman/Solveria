@@ -66,3 +66,13 @@ export const loginUser = async (user) => {
     if (!response.ok) throw new Error('Login failed');
     return await response.json();
 };
+
+export const updateTaskStatus = async (id, status) => {
+    const response = await fetch(`${API_URL}/schedule/${id}/status`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+    });
+    if (!response.ok) throw new Error('Failed to update task status');
+    return await response.json();
+};

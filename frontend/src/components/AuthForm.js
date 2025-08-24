@@ -54,7 +54,7 @@ function AuthForm({ onSubmit, isLoginMode, toggleMode }) {
         <button type="submit">{isLoginMode ? 'Login' : 'Register'}</button>
       </form>
       <p onClick={toggleMode} className="toggle-mode-link">
-        {isLoginMode ? 'Belum punya akun? Register ye bang' : 'Sudah punya akun? Login'}
+        {isLoginMode ? 'Belum punya akun? Register paling depan' : 'Sudah punya akun? Login'}
       </p>
     </div>
   );

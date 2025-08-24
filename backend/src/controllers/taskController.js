@@ -30,10 +30,10 @@ const runSolverAndSave = (res, allTasks, userId) => {
 
             // Perbarui data tugas di database
             const updates = solvedSchedule.map(task => {
-                const { id, start_time, end_time, conflict, conflict_reason } = task;
+                const { id, start_time, end_time, conflict, conflict_reason, status } = task;
                 return new Promise((resolve, reject) => {
-                    const sql = `UPDATE tasks SET start_time = ?, end_time = ?, conflict = ?, conflict_reason = ? WHERE id = ? AND user_id = ?`;
-                    db.query(sql, [start_time, end_time, conflict, conflict_reason, id, userId], (err) => {
+                    const sql = `UPDATE tasks SET start_time = ?, end_time = ?, conflict = ?, conflict_reason = ?, status = ? WHERE id = ? AND user_id = ?`;
+                    db.query(sql, [start_time, end_time, conflict, conflict_reason, status, id, userId], (err) => {
                         if (err) return reject(err);
                         resolve();
                     });
@@ -87,6 +87,31 @@ exports.editTask = (req, res) => {
         if (error) {
             console.error(error);
             return res.status(500).send('Failed to edit task.');
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).send('Task not found or unauthorized.');
+        }
+
+        db.query('SELECT * FROM tasks WHERE user_id = ?', [userId], (err, allTasks) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Failed to fetch tasks.');
+            }
+            runSolverAndSave(res, allTasks, userId);
+        });
+    });
+};
+
+exports.updateTaskStatus = (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const userId = req.userId;
+
+    const sql = `UPDATE tasks SET status = ? WHERE id = ? AND user_id = ?`;
+    db.query(sql, [status, id, userId], (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).send('Failed to update task status.');
         }
         if (results.affectedRows === 0) {
             return res.status(404).send('Task not found or unauthorized.');
