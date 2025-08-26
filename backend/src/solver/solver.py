@@ -24,6 +24,7 @@ def solve_schedule(tasks):
                 'id': task['id'],
                 'name': task['name'],
                 'duration_minutes': int(float(task['duration']) * MINUTES_PER_HOUR),
+                'priority': int(task.get('priority', '1')),  # Default to lowest priority if not set
                 'deadline_minutes': (deadline_dt - base_time).total_seconds() / 60,
                 'window_start_minutes': (window_start_dt - base_time).total_seconds() / 60,
                 'window_end_minutes': (window_end_dt - base_time).total_seconds() / 60,
@@ -62,7 +63,8 @@ def solve_schedule(tasks):
         task_id = p_task['id']
         end_var = task_vars[task_id]['end']
         
-        priority_weight = 1.0 / (p_task['deadline_minutes'] + 1)
+        # Higher priority tasks (3) should have lower end times than lower priority tasks (1)
+        priority_weight = 1.0 / ((4 - p_task['priority']) * (p_task['deadline_minutes'] + 1))
         
         objective_terms.append(end_var * priority_weight)
 
@@ -102,6 +104,7 @@ def solve_schedule(tasks):
                 'id': original['id'],
                 'name': original['name'],
                 'duration': original['duration'],
+                'priority': original.get('priority', '1'),
                 'deadline': original['deadline'],
                 'window_start': original['window_start'],
                 'window_end': original['window_end'],

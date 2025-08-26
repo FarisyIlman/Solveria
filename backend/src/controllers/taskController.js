@@ -57,9 +57,9 @@ const runSolverAndSave = (res, allTasks, userId) => {
 };
 
 exports.addTask = (req, res) => {
-    const { name, duration, deadline, window_start, window_end } = req.body;
+    const { name, priority, duration, deadline, window_start, window_end } = req.body;
     const userId = req.userId;
-    const newTask = { name, duration, deadline, window_start, window_end };
+    const newTask = { name, priority, duration, deadline, window_start, window_end };
 
     db.query('INSERT INTO tasks SET ?, user_id = ?', [newTask, userId], (error, results) => {
         if (error) {

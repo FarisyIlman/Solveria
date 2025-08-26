@@ -96,6 +96,7 @@ function TaskList({ title, tasks, onEdit, onDelete, onChangeStatus }) {
                 </div>
                 
                 <div className="task-details">
+                  <p><strong>Prioritas:</strong> {task.priority === '1' ? 'Rendah' : task.priority === '2' ? 'Sedang' : 'Tinggi'} ({task.priority})</p>
                   <p><strong>Durasi:</strong> {task.duration} jam</p>
                   <p><strong>Deadline:</strong> {formatDate(task.deadline)}</p>
                   

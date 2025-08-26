@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 function TaskForm({ onSubmit, initialData, tasks }) {
   const [task, setTask] = useState({
     name: '',
-    priority: '1',
     duration: '',
     deadline: '',
     window_start: '',
@@ -18,7 +17,6 @@ function TaskForm({ onSubmit, initialData, tasks }) {
     if (initialData) {
       setTask({
         name: initialData.name || '',
-        priority: initialData.priority || '1',
         duration: initialData.duration || '',
         deadline: initialData.deadline || '',
         window_start: initialData.window_start || '',
@@ -116,7 +114,6 @@ function TaskForm({ onSubmit, initialData, tasks }) {
         // Reset form hanya untuk tambah baru
         setTask({
           name: '',
-          priority: '1',
           duration: '',
           deadline: '',
           window_start: '',
@@ -133,21 +130,6 @@ function TaskForm({ onSubmit, initialData, tasks }) {
       <h2>{initialData ? 'Edit Tugas' : 'Tambah Tugas Baru'}</h2>
       <form onSubmit={handleSubmit}>
         <input name="name" type="text" value={task.name} onChange={handleChange} placeholder="Nama Tugas" required />
-        <label>Prioritas</label>
-        <select name="priority" value={task.priority} onChange={handleChange} required 
-          style={{
-            padding: '8px',
-            marginBottom: '16px',
-            width: '100%',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            backgroundColor: '#424242',
-            color: '#fff'
-          }}>
-          <option value="1">Rendah (1)</option>
-          <option value="2">Sedang (2)</option>
-          <option value="3">Tinggi (3)</option>
-        </select>
         <input name="duration" type="number" value={task.duration} onChange={handleChange} placeholder="Durasi (jam)" required />
         <label>Deadline</label>
         <input name="deadline" type="datetime-local" value={task.deadline} onChange={handleChange} required />
