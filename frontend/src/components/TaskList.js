@@ -102,8 +102,9 @@ function TaskList({ title, tasks, onEdit, onDelete, onChangeStatus }) {
                   
                   {task.start_time && task.end_time && (
                     <>
-                      <p><strong>Waktu Mulai:</strong> {formatDate(task.start_time)}</p>
-                      <p><strong>Waktu Selesai:</strong> {formatDate(task.end_time)}</p>
+                      <p><strong>Waktu Mulai:</strong> {formatDate(task.start_time || task.window_start)}</p>
+<p><strong>Waktu Selesai:</strong> {formatDate(task.end_time || task.window_end)}</p>
+
                     </>
                   )}
                   

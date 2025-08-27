@@ -53,26 +53,28 @@ function App() {
       alert(error.message);
     }
   };
-
-  const handleTaskSubmit = async (task) => {
+const handleTaskSubmit = async (task) => {
   try {
-    if (editingTask) {
-      // Update task yang diedit
-      setTasks(prev => prev.map(t => t.id === editingTask.id ? { ...t, ...task } : t));
-      setEditingTask(null);
-      updateTask(editingTask.id, task).catch(console.error);
-    } else {
-      // Tambah task baru langsung ke state lokal
-      const newTask = { ...task, id: Date.now(), status: 'Not Completed' };
-      setTasks(prev => [...prev, newTask]);
+    const taskWithTimes = {
+      ...task,
+      start_time: task.window_start,
+      end_time: task.window_end,
+    };
 
-      // Simpan ke backend, tapi jangan tunggu
-      submitTask(task).catch(console.error);
+    if (editingTask) {
+      setTasks(prev => prev.map(t => t.id === editingTask.id ? { ...t, ...taskWithTimes } : t));
+      setEditingTask(null);
+      updateTask(editingTask.id, taskWithTimes).catch(console.error);
+    } else {
+      const newTask = { ...taskWithTimes, id: Date.now(), status: 'Not Completed' };
+      setTasks(prev => [...prev, newTask]);
+      submitTask(taskWithTimes).catch(console.error);
     }
   } catch (err) {
     console.error(err);
   }
 };
+
 
 
 
