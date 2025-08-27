@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
 import AuthForm from './components/AuthForm';
-import { getTasks, submitTask, updateTask, removeTask, loginUser, registerUser } from './api/taskApi';
+import { getTasks, submitTask, updateTask, removeTask, updateTaskStatus, loginUser, registerUser } from './api/taskApi';
 import './App.css';
 
 function App() {
@@ -53,7 +53,7 @@ function App() {
       alert(error.message);
     }
   };
-const handleTaskSubmit = async (task) => {
+  const handleTaskSubmit = async (task) => {
   try {
     const taskWithTimes = {
       ...task,
@@ -62,30 +62,28 @@ const handleTaskSubmit = async (task) => {
     };
 
     if (editingTask) {
-      setTasks(prev => prev.map(t => t.id === editingTask.id ? { ...t, ...taskWithTimes } : t));
+      const response = await updateTask(editingTask.id, taskWithTimes);
+      setTasks(response.schedule); // Use the response schedule
       setEditingTask(null);
-      updateTask(editingTask.id, taskWithTimes).catch(console.error);
     } else {
-      const newTask = { ...taskWithTimes, id: Date.now(), status: 'Not Completed' };
-      setTasks(prev => [...prev, newTask]);
-      submitTask(taskWithTimes).catch(console.error);
+      const taskToSubmit = { ...taskWithTimes, status: 'Not Completed' };
+      const response = await submitTask(taskToSubmit);
+      setTasks(response.schedule);
     }
   } catch (err) {
     console.error(err);
+    alert('Failed to submit task. Please try again.');
   }
 };
 
 
 
-
-
   const handleChangeStatus = async (taskId, newStatus) => {
   try {
-    // Update state lokal langsung
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-
-    // Update backend
-    await updateTask(taskId, { status: newStatus });
+    // Update backend dulu
+    const response = await updateTaskStatus(taskId, newStatus);
+    // Update state
+    setTasks(response.schedule);
   } catch (error) {
     console.error("Failed to update task status:", error);
     alert("Terjadi kesalahan saat update status task di server.");
@@ -97,12 +95,11 @@ const handleTaskSubmit = async (task) => {
   const handleDelete = async (taskId) => {
   const confirmed = window.confirm("Apakah Anda yakin akan menghapus tugas ini?");
   if (confirmed) {
-    // Update state lokal langsung
-    setTasks(prevTasks => prevTasks.filter(t => t.id !== taskId));
-
     try {
-      // Hapus di backend tanpa menunggu
-      await removeTask(taskId);
+      // Delete dari backend
+      const response = await removeTask(taskId);
+      // Update backend
+      setTasks(response.schedule);
     } catch (error) {
       console.error("Failed to delete task:", error);
       alert("Terjadi kesalahan saat menghapus task di server.");
@@ -119,7 +116,7 @@ const handleTaskSubmit = async (task) => {
     setTasks([]); // Kosongkan state tasks saat logout
   };
 
-  const notCompletedTasks = tasks.filter(t => t.status === 'Not Completed');
+  const notCompletedTasks = tasks.filter(t => t.status === 'Not Completed' || t.status === null || t.status === '');
   const onProgressTasks = tasks.filter(t => t.status === 'On Progress');
   const completedTasks = tasks.filter(t => t.status === 'Completed');
 

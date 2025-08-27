@@ -96,7 +96,7 @@ function TaskList({ title, tasks, onEdit, onDelete, onChangeStatus }) {
                 </div>
                 
                 <div className="task-details">
-                  <p><strong>Prioritas:</strong> {task.priority === '1' ? 'Rendah' : task.priority === '2' ? 'Sedang' : 'Tinggi'}</p>
+                  <p><strong>Prioritas:</strong> {task.priority == 1 ? 'Rendah' : task.priority == 2 ? 'Sedang' : 'Tinggi'}</p>
                   <p><strong>Durasi:</strong> {task.duration} jam</p>
                   <p><strong>Deadline:</strong> {formatDate(task.deadline)}</p>
                   
@@ -109,7 +109,7 @@ function TaskList({ title, tasks, onEdit, onDelete, onChangeStatus }) {
                   )}
                   
                   {task.conflict && (
-                    <p className="conflict-reason"><strong>Alasan Konflik:</strong> {task.reason}</p>
+                    <p className="conflict-reason"><strong>Alasan Konflik:</strong> {task.conflict_reason}</p>
                   )}
                 </div>
                 
