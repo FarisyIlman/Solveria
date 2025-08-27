@@ -144,9 +144,9 @@ function TaskForm({ onSubmit, initialData, tasks }) {
             backgroundColor: '#424242',
             color: '#fff'
           }}>
-          <option value="1">Rendah (1)</option>
-          <option value="2">Sedang (2)</option>
-          <option value="3">Tinggi (3)</option>
+          <option value="1">Rendah</option>
+          <option value="2">Sedang</option>
+          <option value="3">Tinggi</option>
         </select>
         <input name="duration" type="number" value={task.duration} onChange={handleChange} placeholder="Durasi (jam)" required />
         <label>Deadline</label>
