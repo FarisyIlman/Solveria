@@ -1,52 +1,61 @@
 // backend/src/controllers/authController.js
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
+const util = require('util');
 
-// Ganti dengan secret key yang kuat
-const jwtSecret = 'mysecretkey123'; 
+// Mengubah db.query menjadi Promise
+db.query = util.promisify(db.query);
 
-exports.register = (req, res) => {
+// Gunakan environment variable untuk secret key.
+const jwtSecret = process.env.JWT_SECRET || 'your_very_strong_secret_key';
+
+exports.register = async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
-        return res.status(400).send('Username and password are required.');
+        return res.status(400).send('Username dan password harus diisi.');
     }
 
-    db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], (error, results) => {
-        if (error) {
-            if (error.code === 'ER_DUP_ENTRY') {
-                return res.status(409).send('Username already exists.');
-            }
-            console.error(error);
-            return res.status(500).send('Server error.');
+    try {
+        // Simpan password dalam format teks biasa (plain-text)
+        await db.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, password]);
+        res.status(201).send('Pengguna berhasil didaftarkan.');
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).send('Username sudah ada.');
         }
-        res.status(201).send('User registered successfully.');
-    });
+        console.error(error);
+        return res.status(500).send('Terjadi kesalahan server.');
+    }
 };
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
-        return res.status(400).send('Username and password are required.');
+        return res.status(400).send('Username dan password harus diisi.');
     }
 
-    // Ubah query untuk membandingkan langsung dengan password
-    db.query('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (error, results) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).send('Server error.');
-        }
-        if (results.length === 0) {
-            return res.status(401).send('Invalid username or password.');
+    try {
+        const results = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+
+        if (!results || results.length === 0) {
+            return res.status(401).send('Username atau password salah.');
         }
 
         const user = results[0];
+        // Bandingkan password yang dimasukkan dengan password yang ada di database secara langsung
+        if (password !== user.password) {
+            return res.status(401).send('Username atau password salah.');
+        }
+
         const token = jwt.sign({ id: user.id }, jwtSecret, { expiresIn: '1h' });
         res.json({ token, userId: user.id });
-    });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send('Terjadi kesalahan server.');
+    }
 };
 
 exports.authenticateToken = (req, res, next) => {
-    // Kode ini tidak berubah
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
